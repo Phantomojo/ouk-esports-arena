@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Gamepad2, Smartphone, Monitor, Trophy, CheckCircle2, BarChart3, Users, User, ShieldCheck, Home, Target, Settings, Newspaper } from 'lucide-react';
-import { supabase } from './supabase';
+import { supabase, isConfigured } from './supabase';
 import { Admin } from './Admin';
 import { Tournaments } from './Tournaments';
 import { Brackets } from './Brackets';
@@ -202,7 +202,11 @@ function RegistrationForm() {
       }
     } catch (err) {
       console.error('Submission error:', err);
-      alert('Transmission failed. Re-check your signal.');
+      if (!isConfigured) {
+        alert('Configuration Error: Supabase connection not established. Please check Vercel environment variables.');
+      } else {
+        alert('Transmission failed. Re-check your signal.');
+      }
     }
   };
 

@@ -3,31 +3,32 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-// Log environment status for debugging (remove in production if sensitive)
-console.log('[Supabase] URL configured:', !!supabaseUrl);
-console.log('[Supabase] Key configured:', !!supabaseAnonKey);
-
 let supabase: SupabaseClient;
 
-try {
-    if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn('[Supabase] Credentials missing. Using placeholder values - some features may not work.');
-    }
+const isConfigured = !!supabaseUrl && !!supabaseAnonKey && !supabaseUrl.includes('placeholder');
 
+if (!isConfigured) {
+    console.warn('[Supabase] CRITICAL: Environment variables missing or using placeholders. Database operations WILL fail.');
+    console.warn('[Supabase] Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Vercel settings.');
+}
+
+try {
     supabase = createClient(
         supabaseUrl || 'https://placeholder.supabase.co',
-        supabaseAnonKey || 'placeholder-key-that-will-not-work'
+        supabaseAnonKey || 'placeholder-key'
     );
-
-    console.log('[Supabase] Client initialized successfully');
+    if (isConfigured) {
+        console.log('[Supabase] Client initialized successfully');
+    }
 } catch (error) {
     console.error('[Supabase] Failed to initialize client:', error);
-    // Create a minimal mock client to prevent crashes
+    // Create a minimal mock client to prevent app crash, 
+    // but ops will fail with network errors as expected
     supabase = createClient(
-        'https://placeholder.supabase.co',
-        'placeholder-key'
+        'https://invalid-url.supabase.co',
+        'invalid-key'
     );
 }
 
-export { supabase };
+export { supabase, isConfigured };
 

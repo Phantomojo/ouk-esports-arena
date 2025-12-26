@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trophy, Medal, Star, TrendingUp, User, Users } from 'lucide-react';
 
-import { supabase } from './supabase';
+import { supabase, isConfigured } from './supabase';
 
 export function Leaderboard() {
     const [leaders, setLeaders] = React.useState<any[]>([]);
@@ -24,7 +24,12 @@ export function Leaderboard() {
             }
         };
 
-        fetchLeaders();
+        if (isConfigured) {
+            fetchLeaders();
+        } else {
+            console.warn('[Leaderboard] Skipping fetch - Supabase not configured');
+            setLoading(false);
+        }
     }, []);
     return (
         <div className="container animate-fade-in" style={{ padding: '120px 20px 80px' }}>

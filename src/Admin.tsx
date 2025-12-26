@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from './supabase';
+import { supabase, isConfigured } from './supabase';
 import {
     Users,
     Search,
@@ -78,6 +78,9 @@ export function Admin() {
             setRegistrations(data || []);
         } catch (err) {
             console.error('Error fetching registrations:', err);
+            if (!isConfigured) {
+                alert('Database not connected. Please check project configuration.');
+            }
         } finally {
             setLoading(false);
         }
