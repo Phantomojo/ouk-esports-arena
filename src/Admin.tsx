@@ -206,18 +206,19 @@ export function Admin() {
                             <th style={{ padding: '20px' }}>Skill</th>
                             <th style={{ padding: '20px' }}>Type</th>
                             <th style={{ padding: '20px' }}><Calendar size={16} style={{ marginRight: '8px' }} /> Joined</th>
+                            <th style={{ padding: '20px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
                                     Intercepting player data...
                                 </td>
                             </tr>
                         ) : filteredRegistrations.length === 0 ? (
                             <tr>
-                                <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
                                     No player files found matching these parameters.
                                 </td>
                             </tr>
@@ -262,6 +263,15 @@ export function Admin() {
                                     <td style={{ padding: '20px', color: 'var(--text-secondary)' }}>{reg.entry_type}</td>
                                     <td style={{ padding: '20px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                         {new Date(reg.created_at).toLocaleDateString()}
+                                    </td>
+                                    <td style={{ padding: '20px' }}>
+                                        <button
+                                            onClick={() => handleDelete(reg.id, reg.full_name)}
+                                            style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '5px' }}
+                                            title="Purge Record"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))
