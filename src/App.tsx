@@ -188,7 +188,7 @@ function RegistrationForm() {
           contact: formData.contact,
           selected_games: formData.selectedGames,
           other_game: formData.otherGame,
-          device_ids: formData.deviceIds,
+          device_id: formData.deviceIds.join(', '), // Using existing singular column
           skill_level: formData.skillLevel,
           entry_type: formData.entryType
         }])
