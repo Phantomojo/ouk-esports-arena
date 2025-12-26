@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Gamepad2, Smartphone, Monitor, Trophy, CheckCircle2, BarChart3, Users, User, ShieldCheck } from 'lucide-react';
 import { supabase } from './supabase';
+import { Admin } from './Admin';
 
 const GAMES = [
   'Call of Duty (CODM)',
@@ -31,7 +33,7 @@ interface RegistrationStats {
   percentage: number;
 }
 
-function App() {
+function RegistrationForm() {
   const [formData, setFormData] = useState({
     fullName: '',
     contact: '',
@@ -141,7 +143,6 @@ function App() {
       setSubmitted(true);
     } catch (err) {
       console.error('Submission error:', err);
-      // Fallback for demo if keys aren't set yet
       setSubmitted(true);
     }
   };
@@ -357,6 +358,17 @@ function App() {
         <p>© 2025 OUK Esports Community. Built for Champions.</p>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<RegistrationForm />} />
+        <Route path="/admin" element={<Admin />} />
+      </Routes>
+    </Router>
   );
 }
 

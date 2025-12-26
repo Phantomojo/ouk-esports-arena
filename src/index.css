@@ -274,3 +274,34 @@ input:focus {
     font-size: 1rem;
   }
 }
+
+/* Admin Table Styles */
+.admin-table th {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-table td {
+  transition: all 0.3s ease;
+}
+
+.table-row-hover:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table-row-hover:hover td {
+  color: white;
+}
+
+select {
+  appearance: none;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
