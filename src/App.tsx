@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Gamepad2, Smartphone, Monitor, Trophy, CheckCircle2, BarChart3, Users, User, ShieldCheck } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Gamepad2, Smartphone, Monitor, Trophy, CheckCircle2, BarChart3, Users, User, ShieldCheck, Home, Target, Settings, Newspaper } from 'lucide-react';
 import { supabase } from './supabase';
 import { Admin } from './Admin';
+import { Tournaments } from './Tournaments';
+import { Brackets } from './Brackets';
+import { Leaderboard } from './Leaderboard';
+import { News } from './News';
+import { Profile } from './Profile';
 
 const GAMES = [
   'Call of Duty (CODM)',
@@ -31,6 +36,44 @@ interface RegistrationStats {
   game: string;
   count: number;
   percentage: number;
+}
+
+function Navbar() {
+  const location = useLocation();
+  const isAdmin = location.pathname === '/admin';
+
+  return (
+    <nav className="glass-panel" style={{
+      position: 'fixed',
+      top: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 1000,
+      width: 'auto',
+      padding: '10px 30px',
+      display: 'flex',
+      gap: '30px',
+      borderRadius: '50px',
+      borderWidth: '1px'
+    }}>
+      <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: location.pathname === '/' ? 'var(--accent-primary)' : 'white', textDecoration: 'none', fontWeight: 600 }}>
+        <Home size={18} /> Enrollment
+      </Link>
+      <Link to="/tournaments" className={`nav-link ${location.pathname.startsWith('/tournaments') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: location.pathname.startsWith('/tournaments') ? 'var(--accent-primary)' : 'white', textDecoration: 'none', fontWeight: 600 }}>
+        <Target size={18} /> Tournaments
+      </Link>
+      <Link to="/leaderboard" className={`nav-link ${location.pathname === '/leaderboard' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: location.pathname === '/leaderboard' ? 'var(--accent-primary)' : 'white', textDecoration: 'none', fontWeight: 600 }}>
+        <BarChart3 size={18} /> Rankings
+      </Link>
+      <Link to="/news" className={`nav-link ${location.pathname === '/news' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: location.pathname === '/news' ? 'var(--accent-primary)' : 'white', textDecoration: 'none', fontWeight: 600 }}>
+        <Newspaper size={18} /> Intel
+      </Link>
+      <div style={{ width: '1px', height: '20px', background: 'var(--glass-border)', margin: '0 10px' }}></div>
+      <Link to="/admin" className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: location.pathname === '/admin' ? 'var(--accent-primary)' : 'white', textDecoration: 'none', fontWeight: 600 }}>
+        <Settings size={18} /> Admin
+      </Link>
+    </nav>
+  );
 }
 
 function RegistrationForm() {
@@ -149,7 +192,7 @@ function RegistrationForm() {
 
   if (submitted) {
     return (
-      <div className="container animate-fade-in" style={{ padding: '80px 20px' }}>
+      <div className="container animate-fade-in" style={{ padding: '120px 20px 80px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div className="glass-panel" style={{ textAlign: 'center', marginBottom: '40px' }}>
             <CheckCircle2 size={64} color="#00f2ff" style={{ marginBottom: '1.5rem' }} />
@@ -207,7 +250,7 @@ function RegistrationForm() {
   }
 
   return (
-    <div className="container animate-fade-in" style={{ padding: '80px 20px' }}>
+    <div className="container animate-fade-in" style={{ padding: '120px 20px 80px' }}>
       <header style={{ textAlign: 'center', marginBottom: '60px' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: 'var(--accent-primary)', marginBottom: '15px' }}>
           <Trophy size={24} />
@@ -364,8 +407,14 @@ function RegistrationForm() {
 function App() {
   return (
     <Router>
+      <Navbar />
       <Routes>
         <Route path="/" element={<RegistrationForm />} />
+        <Route path="/tournaments" element={<Tournaments />} />
+        <Route path="/tournaments/bracket/:id" element={<Brackets />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/profile/:id" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>

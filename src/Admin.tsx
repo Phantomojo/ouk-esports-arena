@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from './supabase';
 import {
     Users,
@@ -205,7 +206,9 @@ export function Admin() {
                             filteredRegistrations.map(reg => (
                                 <tr key={reg.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }} className="table-row-hover">
                                     <td style={{ padding: '20px' }}>
-                                        <div style={{ fontWeight: 600 }}>{reg.full_name}</div>
+                                        <Link to={`/profile/${reg.id}`} style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: 600 }}>
+                                            {reg.full_name}
+                                        </Link>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--accent-secondary)' }}>{reg.device_id.toUpperCase()}</div>
                                     </td>
                                     <td style={{ padding: '20px', color: 'var(--text-secondary)' }}>{reg.contact}</td>
