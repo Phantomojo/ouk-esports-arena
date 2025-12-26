@@ -12,7 +12,8 @@ import {
     Calendar,
     Contact,
     Gamepad2,
-    Trophy
+    Trophy,
+    Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,6 +46,23 @@ export function Admin() {
             fetchRegistrations();
         } else {
             alert('Access Denied: Incorrect Override Code.');
+        }
+    };
+
+    const handleDelete = async (id: string, name: string) => {
+        if (!window.confirm(`Are you sure you want to purge the combatant record for ${name}? This action is irreversible.`)) return;
+
+        try {
+            const { error } = await supabase
+                .from('registrations')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            setRegistrations(prev => prev.filter(reg => reg.id !== id));
+        } catch (err) {
+            console.error('Purge failed:', err);
+            alert('Failed to delete record. Strategic failure.');
         }
     };
 

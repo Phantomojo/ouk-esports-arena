@@ -63,7 +63,7 @@ function Navbar() {
         <Target size={18} /> Tournaments
       </Link>
       <Link to="/leaderboard" className={`nav-link ${location.pathname === '/leaderboard' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: location.pathname === '/leaderboard' ? 'var(--accent-primary)' : 'white', textDecoration: 'none', fontWeight: 600 }}>
-        <BarChart3 size={18} /> Rankings
+        <Users size={18} /> Roster
       </Link>
       <Link to="/news" className={`nav-link ${location.pathname === '/news' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: location.pathname === '/news' ? 'var(--accent-primary)' : 'white', textDecoration: 'none', fontWeight: 600 }}>
         <Newspaper size={18} /> Intel
