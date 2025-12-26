@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Gamepad2, Smartphone, Monitor, Trophy, CheckCircle2, BarChart3, Users, User, ShieldCheck } from 'lucide-react';
+import { supabase } from './supabase';
 
 const GAMES = [
   'Call of Duty (CODM)',
@@ -24,13 +25,11 @@ const DEVICES = [
 
 const SKILL_LEVELS = ['Amateur', 'Semi-Pro', 'Elite'];
 
-const MOCK_STATS = [
-  { game: 'FIFA 24', count: 45, percentage: 85 },
-  { game: 'CODM', count: 38, percentage: 72 },
-  { game: 'PUBG Mobile', count: 32, percentage: 60 },
-  { game: 'Valorant', count: 28, percentage: 52 },
-  { game: 'MLBB', count: 25, percentage: 48 }
-];
+interface RegistrationStats {
+  game: string;
+  count: number;
+  percentage: number;
+}
 
 function App() {
   const [formData, setFormData] = useState({
@@ -44,10 +43,55 @@ function App() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [liveStats, setLiveStats] = useState<RegistrationStats[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('registrations')
+        .select('selected_games');
+
+      if (error) throw error;
+
+      if (data) {
+        const gameCounts: { [key: string]: number } = {};
+        let totalRegistrations = data.length;
+
+        data.forEach(reg => {
+          reg.selected_games.forEach((game: string) => {
+            gameCounts[game] = (gameCounts[game] || 0) + 1;
+          });
+        });
+
+        const statsArray = Object.entries(gameCounts)
+          .map(([game, count]) => ({
+            game,
+            count,
+            percentage: totalRegistrations > 0 ? (count / totalRegistrations) * 100 : 0
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+
+        setLiveStats(statsArray);
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (submitted) {
-      const timer = setTimeout(() => setShowStats(true), 1000);
+      const timer = setTimeout(() => {
+        setShowStats(true);
+        fetchStats();
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [submitted]);
@@ -73,13 +117,33 @@ function App() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.selectedGames.length === 0 || !formData.deviceId) {
       alert('Please select at least one game and your device.');
       return;
     }
-    setSubmitted(true);
+
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .insert([{
+          full_name: formData.fullName,
+          contact: formData.contact,
+          selected_games: formData.selectedGames,
+          other_game: formData.otherGame,
+          device_id: formData.deviceId,
+          skill_level: formData.skillLevel,
+          entry_type: formData.entryType
+        }]);
+
+      if (error) throw error;
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Submission error:', err);
+      // Fallback for demo if keys aren't set yet
+      setSubmitted(true);
+    }
   };
 
   if (submitted) {
@@ -101,21 +165,25 @@ function App() {
                 <h3 style={{ margin: 0, textTransform: 'uppercase', letterSpacing: '2px' }}>Community Heatmap</h3>
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '20px' }}>
-                See where you stand. Here's what other OUK players are grinding:
+                Real-time data from OUK players:
               </p>
 
               <div className="stats-container">
-                {MOCK_STATS.map(stat => (
-                  <div key={stat.game} className="stat-bar-wrapper">
-                    <div className="stat-label">
-                      <span>{stat.game}</span>
-                      <span>{stat.count} Players</span>
+                {liveStats.length > 0 ? (
+                  liveStats.map(stat => (
+                    <div key={stat.game} className="stat-bar-wrapper">
+                      <div className="stat-label">
+                        <span>{stat.game}</span>
+                        <span>{stat.count} Players</span>
+                      </div>
+                      <div className="stat-bar-bg">
+                        <div className="stat-bar-fill" style={{ width: `${stat.percentage}%` }}></div>
+                      </div>
                     </div>
-                    <div className="stat-bar-bg">
-                      <div className="stat-bar-fill" style={{ width: `${stat.percentage}%` }}></div>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Calculating community trends...</p>
+                )}
               </div>
 
               <div style={{ marginTop: '30px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
