@@ -82,7 +82,7 @@ function RegistrationForm() {
     contact: '',
     selectedGames: [] as string[],
     otherGame: '',
-    deviceId: '',
+    deviceIds: [] as string[],
     skillLevel: 'Amateur',
     entryType: 'Solo'
   });
@@ -162,31 +162,47 @@ function RegistrationForm() {
     });
   };
 
+  const toggleDevice = (deviceId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      deviceIds: prev.deviceIds.includes(deviceId)
+        ? prev.deviceIds.filter(id => id !== deviceId)
+        : [...prev.deviceIds, deviceId]
+    }));
+  };
+
+  const [newProfileId, setNewProfileId] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.selectedGames.length === 0 || !formData.deviceId) {
-      alert('Please select at least one game and your device.');
+    if (formData.selectedGames.length === 0 || formData.deviceIds.length === 0) {
+      alert('Please select at least one game and one device.');
       return;
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('registrations')
         .insert([{
           full_name: formData.fullName,
           contact: formData.contact,
           selected_games: formData.selectedGames,
           other_game: formData.otherGame,
-          device_id: formData.deviceId,
+          device_ids: formData.deviceIds,
           skill_level: formData.skillLevel,
           entry_type: formData.entryType
-        }]);
+        }])
+        .select();
 
       if (error) throw error;
-      setSubmitted(true);
+
+      if (data && data[0]) {
+        setNewProfileId(data[0].id);
+        setSubmitted(true);
+      }
     } catch (err) {
       console.error('Submission error:', err);
-      setSubmitted(true);
+      alert('Transmission failed. Re-check your signal.');
     }
   };
 
@@ -197,9 +213,16 @@ function RegistrationForm() {
           <div className="glass-panel" style={{ textAlign: 'center', marginBottom: '40px' }}>
             <CheckCircle2 size={64} color="#00f2ff" style={{ marginBottom: '1.5rem' }} />
             <h2>GG, You're Registered!</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              Welcome to the OUK Esports Arena. Your intel has been logged.
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+              Welcome to the OUK Esports Arena. Your digital tactial profile is ready.
             </p>
+            <Link
+              to={`/profile/${newProfileId}`}
+              className="btn-primary"
+              style={{ display: 'inline-block', textDecoration: 'none', width: '100%', marginBottom: '10px' }}
+            >
+              Access Your Profile
+            </Link>
           </div>
 
           {showStats && (
@@ -366,22 +389,23 @@ function RegistrationForm() {
           </div>
 
           <div className="form-group" style={{ marginBottom: '40px' }}>
-            <label>Your Battle Station</label>
+            <label>Your Battle Stations (Select all that apply)</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px' }}>
               {DEVICES.map(device => {
                 const Icon = device.icon;
+                const isActive = formData.deviceIds.includes(device.id);
                 return (
                   <div
                     key={device.id}
-                    className={`glass-panel ${formData.deviceId === device.id ? 'active' : ''}`}
+                    className={`glass-panel ${isActive ? 'active' : ''}`}
                     style={{
                       padding: '20px', textAlign: 'center', cursor: 'pointer',
-                      borderColor: formData.deviceId === device.id ? 'var(--accent-primary)' : 'var(--glass-border)',
-                      backgroundColor: formData.deviceId === device.id ? 'rgba(0, 242, 255, 0.1)' : 'var(--glass-bg)',
+                      borderColor: isActive ? 'var(--accent-primary)' : 'var(--glass-border)',
+                      backgroundColor: isActive ? 'rgba(0, 242, 255, 0.1)' : 'var(--glass-bg)',
                     }}
-                    onClick={() => setFormData({ ...formData, deviceId: device.id })}
+                    onClick={() => toggleDevice(device.id)}
                   >
-                    <Icon size={32} style={{ marginBottom: '10px', color: formData.deviceId === device.id ? 'var(--accent-primary)' : 'white' }} />
+                    <Icon size={32} style={{ marginBottom: '10px', color: isActive ? 'var(--accent-primary)' : 'white' }} />
                     <div style={{ fontWeight: 600 }}>{device.name}</div>
                   </div>
                 );

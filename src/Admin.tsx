@@ -22,7 +22,8 @@ interface Registration {
     contact: string;
     selected_games: string[];
     other_game: string;
-    device_id: string;
+    device_ids?: string[];
+    device_id?: string;
     skill_level: string;
     entry_type: string;
     created_at: string;
@@ -209,7 +210,9 @@ export function Admin() {
                                         <Link to={`/profile/${reg.id}`} style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: 600 }}>
                                             {reg.full_name}
                                         </Link>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--accent-secondary)' }}>{reg.device_id.toUpperCase()}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--accent-secondary)', display: 'flex', gap: '5px' }}>
+                                            {reg.device_ids ? reg.device_ids.map(id => id.toUpperCase()).join(' + ') : reg.device_id?.toUpperCase()}
+                                        </div>
                                     </td>
                                     <td style={{ padding: '20px', color: 'var(--text-secondary)' }}>{reg.contact}</td>
                                     <td style={{ padding: '20px' }}>

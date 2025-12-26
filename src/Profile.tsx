@@ -124,14 +124,18 @@ export function Profile() {
                             <Target size={24} />
                             <h3 style={{ margin: 0 }}>Battle Station</h3>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                            {player.device_id === 'pc' && <Monitor size={32} />}
-                            {player.device_id === 'mobile' && <Smartphone size={32} />}
-                            {player.device_id === 'console' && <Gamepad2 size={32} />}
-                            <div>
-                                <div style={{ fontWeight: 600, textTransform: 'capitalize' }}>{player.device_id} Gaming</div>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Optimized for {player.skill_level} play.</div>
-                            </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {(player.device_ids || [player.device_id]).map((id: string) => (
+                                <div key={id} style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+                                    {id === 'pc' && <Monitor size={24} color="var(--accent-primary)" />}
+                                    {id === 'mobile' && <Smartphone size={24} color="var(--accent-secondary)" />}
+                                    {id === 'console' && <Gamepad2 size={24} color="var(--accent-primary)" />}
+                                    <div>
+                                        <div style={{ fontWeight: 600, textTransform: 'capitalize', fontSize: '0.9rem' }}>{id} Gaming</div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Tactically Optimized</div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
