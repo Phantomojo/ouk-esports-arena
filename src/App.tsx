@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Gamepad2, Smartphone, Monitor, Trophy, CheckCircle2, BarChart3, Users, User, ShieldCheck, Home, Target, Settings, Newspaper } from 'lucide-react';
+import { Gamepad2, Smartphone, Monitor, Trophy, CheckCircle2, BarChart3, Users, User, ShieldCheck, Home, Target, Settings, Newspaper, Search, LogOut } from 'lucide-react';
 import { supabase, isConfigured } from './supabase';
 import { Admin } from './Admin';
 import { Tournaments } from './Tournaments';
@@ -9,19 +9,15 @@ import { Leaderboard } from './Leaderboard';
 import { News } from './News';
 import { Profile } from './Profile';
 
-const GAMES = [
+import ALL_GAMES from './data/games.json';
+
+const FEATURED_GAMES = [
   'Call of Duty (CODM)',
   'PUBG Mobile',
   'FIFA 24',
-  'Free Fire',
-  'League of Legends',
-  'Mobile Legends',
-  'Delta Force',
-  'Counter-Strike 2',
   'Valorant',
-  'Apex Legends',
-  'Fortnite',
-  'Other'
+  'Free Fire',
+  'Mobile Legends'
 ];
 
 const DEVICES = [
@@ -90,6 +86,9 @@ function RegistrationForm() {
   const [showStats, setShowStats] = useState(false);
   const [liveStats, setLiveStats] = useState<RegistrationStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [gameSearch, setGameSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -120,7 +119,7 @@ function RegistrationForm() {
             percentage: totalRegistrations > 0 ? (count / totalRegistrations) * 100 : 0
           }))
           .sort((a, b) => b.count - a.count)
-          .slice(0, 5);
+          .slice(0, 10);
 
         setLiveStats(statsArray);
       }
@@ -147,20 +146,26 @@ function RegistrationForm() {
         ? prev.selectedGames.filter(g => g !== game)
         : [...prev.selectedGames, game];
 
-      if (game === 'Other' && !newSelectedGames.includes('Other')) {
-        return {
-          ...prev,
-          selectedGames: newSelectedGames,
-          otherGame: ''
-        };
-      }
-
       return {
         ...prev,
         selectedGames: newSelectedGames
       };
     });
   };
+
+  useEffect(() => {
+    if (gameSearch.length > 1) {
+      const results = ALL_GAMES.filter(game =>
+        game.toLowerCase().includes(gameSearch.toLowerCase()) &&
+        !formData.selectedGames.includes(game)
+      ).slice(0, 10);
+      setSearchResults(results);
+      setIsSearching(true);
+    } else {
+      setSearchResults([]);
+      setIsSearching(false);
+    }
+  }, [gameSearch, formData.selectedGames]);
 
   const toggleDevice = (deviceId: string) => {
     setFormData(prev => ({
@@ -367,8 +372,11 @@ function RegistrationForm() {
 
           <div className="form-group" style={{ marginBottom: '40px' }}>
             <label>Select Your Games</label>
-            <div className="chip-container">
-              {GAMES.map(game => (
+
+            {/* Featured Selection */}
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>Top Games</div>
+            <div className="chip-container" style={{ marginBottom: '20px' }}>
+              {FEATURED_GAMES.map(game => (
                 <div
                   key={game}
                   className={`chip ${formData.selectedGames.includes(game) ? 'active' : ''}`}
@@ -379,15 +387,124 @@ function RegistrationForm() {
               ))}
             </div>
 
-            {formData.selectedGames.includes('Other') && (
-              <div className="custom-game-input">
+            {/* Dynamic Search */}
+            <div className="search-container" style={{ position: 'relative', marginBottom: '20px' }}>
+              <div style={{ position: 'relative' }}>
+                <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                 <input
                   type="text"
-                  placeholder="Tell us what you play..."
-                  value={formData.otherGame}
-                  onChange={e => setFormData({ ...formData, otherGame: e.target.value })}
-                  autoFocus
+                  placeholder="Search and add games (e.g. Beach Buggy, ETS2...)"
+                  value={gameSearch}
+                  onChange={e => setGameSearch(e.target.value)}
+                  style={{ paddingLeft: '45px', background: 'rgba(255,255,255,0.03)' }}
                 />
+              </div>
+
+              {isSearching && searchResults.length > 0 && (
+                <div className="glass-panel search-results" style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  zIndex: 50,
+                  padding: '10px',
+                  marginTop: '5px',
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid var(--accent-primary)'
+                }}>
+                  {searchResults.map(game => (
+                    <div
+                      key={game}
+                      className="search-item"
+                      style={{
+                        padding: '12px 15px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                      onClick={() => {
+                        toggleGame(game);
+                        setGameSearch('');
+                      }}
+                    >
+                      <span>{game}</span>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>+ ADD</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {isSearching && searchResults.length === 0 && gameSearch.length > 2 && (
+                <div className="glass-panel" style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  zIndex: 50,
+                  padding: '20px',
+                  marginTop: '5px',
+                  textAlign: 'center',
+                  background: 'rgba(15, 23, 42, 0.95)',
+                  border: '1px solid var(--glass-border)'
+                }}>
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                    "{gameSearch}" not in database.
+                    <button
+                      type="button"
+                      style={{
+                        marginLeft: '10px',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--accent-primary)',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                      onClick={() => {
+                        toggleGame(gameSearch);
+                        setGameSearch('');
+                      }}
+                    >
+                      Add Anyway?
+                    </button>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Selected Games List */}
+            {formData.selectedGames.length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>Your Selection:</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  {formData.selectedGames.map(game => (
+                    <div
+                      key={game}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: 'rgba(0, 242, 255, 0.1)',
+                        padding: '8px 15px',
+                        borderRadius: '50px',
+                        border: '1px solid var(--accent-primary)',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      {game}
+                      <LogOut
+                        size={14}
+                        style={{ cursor: 'pointer', transform: 'rotate(180deg)' }}
+                        onClick={() => toggleGame(game)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

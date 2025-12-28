@@ -192,6 +192,8 @@ export function Admin() {
                                 <option value="Call of Duty (CODM)">CODM</option>
                                 <option value="PUBG Mobile">PUBG Mobile</option>
                                 <option value="Valorant">Valorant</option>
+                                <option value="Beach Buggy Racing">Beach Buggy</option>
+                                <option value="Euro Truck Simulator 2">ETS2</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
